@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Calculadora de Interés Compuesto con Aportaciones</title>
+    <style>
+        body {
+            font-family: sans-serif;
+            margin: 20px;
+            background-color: #f4f4f9;
+            color: #333;
+        }
+        h1 {
+            color: #2c3e50;
+        }
+        label {
+            display: inline-block;
+            width: 200px;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+        input {
+            padding: 8px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            margin-bottom: 10px;
+            width: 150px;
+        }
+        #mesesAdicionales {
+            width: 300px; /* Más ancho para la lista de meses */
+        }
+        button {
+            cursor: pointer;
+            background-color: #3498db;
+            color: white;
+            border: none;
+            padding: 10px 15px;
+            border-radius: 4px;
+            margin-top: 10px;
+            transition: background-color 0.3s;
+        }
+        button:hover {
+            background-color: #2980b9;
+        }
+        hr {
+            border: 0;
+            height: 1px;
+            background-color: #ccc;
+            margin: 20px 0;
+        }
+        table {
+            width: 70%; /* Un poco más ancho para la nueva columna */
+            border-collapse: collapse;
+            margin-top: 15px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+        th, td {
+            border: 1px solid #ddd;
+            padding: 10px;
+            text-align: right;
+        }
+        th {
+            background-color: #ecf0f1;
+            font-weight: bold;
+            text-align: center;
+        }
+        #tablaResultado {
+            overflow-x: auto;
+        }
+    </style>
+</head>
+<body>
+
+    <h1>Calculadora de Rendimiento con Aportaciones 💰</h1>
+    <p>Simulación de inversión con interés compuesto y capital adicional.</p>
+
+    <label for="nombre">Nombre:</label>
+    <input type="text" id="nombre" value="(poner nombre)">
+    <br>
+    
+    <label for="inversion">Inversión Inicial ($):</label>
+    <input type="number" id="inversion" value="100000" min="0">
+    <br>
+    
+    <label for="tasaAnual">Interés Anual (%):</label>
+    <input type="number" id="tasaAnual" value="7.41" step="0.01" min="0">
+    <br>
+    
+    <label for="plazoMeses">Plazo (número de meses):</label>
+    <input type="number" id="plazoMeses" value="10" min="1">
+    <br>
+    
+    <hr>
+
+    <h2>Aportación Adicional</h2>
+    <label for="montoAdicional">Monto a Invertir Adicional ($):</label>
+    <input type="number" id="montoAdicional" value="5000" min="0">
+    <br>
+    
+    <label for="mesesAdicionales">Mes(es) de Aporte (separados por comas):</label>
+    <input type="text" id="mesesAdicionales" value="5, 10" placeholder="Ej: 5, 10, 15">
+    <br>
+
+    <button onclick="calcularYDesplegar()">Oprimir botón 📈</button>
+
+    <hr>
+    
+    <h2>Resumen de la Inversión</h2>
+    <p id="resumenNombre">Nombre: (poner nombre)</p>
+    <p id="resumenInversion">Inversión: 100000</p>
+    <p id="resumenPlazo">Plazo: 10 (número de meses)</p>
+    <p id="resumenAporte">Aporte Adicional: 5000 en meses: 5, 10</p>
+
+
+    <hr>
+
+    <h2>Tabla de Rendimiento por Mes</h2>
+    <div id="tablaResultado">
+        </div>
+
+    <script>
+        
+        /**
+         * Función para formatear un número a 2 decimales y agregar separador de miles.
+         */
+        function formatNumber(num) {
+            // Usamos toLocaleString para formato de moneda (ej: 100,000.00)
+            return parseFloat(num).toLocaleString('es-MX', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+        }
+
+        /**
+         * Función principal que calcula el interés compuesto con aportaciones.
+         */
+        function calcularYDesplegar() {
+            // 1. Obtener y validar los valores de entrada
+            const nombre = document.getElementById('nombre').value;
+            const inversionInicial = parseFloat(document.getElementById('inversion').value);
+            const tasaAnual = parseFloat(document.getElementById('tasaAnual').value);
+            const plazoMeses = parseInt(document.getElementById('plazoMeses').value);
+            
+            // Nuevos valores para aportación
+            const montoAdicional = parseFloat(document.getElementById('montoAdicional').value || 0);
+            const mesesAporteString = document.getElementById('mesesAdicionales').value;
+            
+            // Convertir la lista de meses (string) en un Set de números para búsqueda rápida
+            const mesesAporte = new Set(
+                mesesAporteString.split(',')
+                                 .map(s => parseInt(s.trim()))
+                                 .filter(n => !isNaN(n) && n > 0 && n <= plazoMeses) // Limpiar y validar
+            );
+
+            if (isNaN(inversionInicial) || inversionInicial < 0 || isNaN(tasaAnual) || tasaAnual < 0 || isNaN(plazoMeses) || plazoMeses < 1) {
+                alert("Por favor, introduce valores numéricos válidos en Inversión, Interés y Plazo.");
+                return;
+            }
+
+            // 2. Preparar el resumen y la tasa
+            const tasaMensual = (tasaAnual / 100) / 12;
+
+            // Actualizar el resumen en el HTML
+            document.getElementById('resumenNombre').textContent = `Nombre: ${nombre}`;
+            document.getElementById('resumenInversion').textContent = `Inversión: ${formatNumber(inversionInicial)}`;
+            document.getElementById('resumenPlazo').textContent = `Plazo: ${plazoMeses} (número de meses)`;
+            document.getElementById('resumenAporte').textContent = `Aporte Adicional: ${formatNumber(montoAdicional)} en meses: ${Array.from(mesesAporte).sort((a,b) => a-b).join(', ')}`;
+
+
+            // 3. Generar la tabla de resultados
+            let capitalActual = inversionInicial;
+            let htmlTabla = '<table>';
+            
+            // Nueva columna para la aportación
+            htmlTabla += '<thead><tr><th>mes:</th><th>capital (inicio):</th><th>Aporte:</th><th>interés:</th><th>Acumulado (final):</th></tr></thead>';
+            htmlTabla += '<tbody>';
+
+            // Bucle para iterar mes a mes
+            for (let mes = 1; mes <= plazoMeses; mes++) {
+                
+                // Capital antes de intereses y aportación
+                let capitalInicioMes = capitalActual;
+                let aporteEsteMes = 0;
+
+                // 3.1. Verificar si hay aportación adicional en este mes
+                if (mesesAporte.has(mes)) {
+                    capitalInicioMes += montoAdicional;
+                    aporteEsteMes = montoAdicional;
+                }
+
+                // 3.2. Cálculo del interés sobre el capital *después* de la aportación
+                const interesGanado = capitalInicioMes * tasaMensual;
+
+                // 3.3. Nuevo capital acumulado
+                capitalActual = capitalInicioMes + interesGanado;
+
+                // Formatear los valores para su visualización
+                const capitalFormateado = formatNumber(capitalInicioMes - aporteEsteMes); // Muestra el capital antes del aporte
+                const aporteFormateado = formatNumber(aporteEsteMes);
+                const interesFormateado = formatNumber(interesGanado);
+                const acumuladoFormateado = formatNumber(capitalActual);
+                
+                // Agregar fila a la tabla
+                htmlTabla += `<tr>
+                    <td>${mes}</td>
+                    <td>${capitalFormateado}</td>
+                    <td>${aporteFormateado}</td>
+                    <td>${interesFormateado}</td>
+                    <td>${acumuladoFormateado}</td>
+                </tr>`;
+            }
+
+            htmlTabla += '</tbody></table>';
+
+            // 4. Desplegar la tabla
+            document.getElementById('tablaResultado').innerHTML = htmlTabla;
+        }
+
+        // Llamar a la función al cargar la página para mostrar el resumen inicial
+        window.onload = calcularYDesplegar;
+    </script>
+
+</body>
+</html>
